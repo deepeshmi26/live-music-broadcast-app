@@ -7,7 +7,7 @@ const socket = io.connect("http://localhost:3001");
 let audio = new Audio();
 
 function App() {
-  const [currentSong, setCurrentSong] = useState();
+  const [currentSong, setCurrentSong] = useState("");
 
   useEffect(() => {
     socket.on("disconnect", (reason) => {
@@ -15,12 +15,6 @@ function App() {
     });
 
     socket.on("play", () => {
-      console.log(song);
-      if (currentSong === undefined) {
-        audio.src = song;
-        setCurrentSong(audio.src);
-      }
-      console.log(currentSong);
       audio.play();
     });
 
@@ -30,6 +24,10 @@ function App() {
   });
 
   const playHandler = () => {
+    if (currentSong === "") {
+      setCurrentSong(song);
+      audio.src = song;
+    }
     console.log("Clicked playing");
     socket.emit("play");
   };
