@@ -1,24 +1,47 @@
-import logo from "./logo.svg";
+import { useEffect, useState } from "react";
 import "./App.css";
+import io from "socket.io-client";
+import song from "./assets/music/Samjhawan.mp3";
+const socket = io.connect("http://localhost:3001");
+
+let audio = new Audio();
 
 function App() {
-  console.log("Hello");
+  const [currentSong, setCurrentSong] = useState();
+
+  useEffect(() => {
+    socket.on("disconnect", (reason) => {
+      console.log(reason);
+    });
+
+    socket.on("play", () => {
+      console.log(song);
+      if (currentSong === undefined) {
+        audio.src = song;
+        setCurrentSong(audio.src);
+      }
+      console.log(currentSong);
+      audio.play();
+    });
+
+    socket.on("pause", () => {
+      audio.pause();
+    });
+  });
+
+  const playHandler = () => {
+    console.log("Clicked playing");
+    socket.emit("play");
+  };
+
+  const stopHandler = () => {
+    socket.emit("pause");
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <button onClick={playHandler}>Play</button>
+      <button onClick={stopHandler}> Pause</button>
     </div>
   );
 }
