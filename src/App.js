@@ -1,36 +1,41 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import io from "socket.io-client";
+import ss from "socket.io-stream";
 import song from "./assets/music/Samjhawan.mp3";
-const socket = io.connect("http://localhost:3001");
+let socket = io.connect("http://localhost:3001");
 
 let audio = new Audio();
 
 function App() {
-  const [currentSong, setCurrentSong] = useState();
+  let [currentSong, setCurrentSong] = useState("");
 
   useEffect(() => {
     socket.on("disconnect", (reason) => {
       console.log(reason);
     });
 
-    socket.on("play", () => {
-      console.log(song);
-      if (currentSong === undefined) {
-        audio.src = song;
-        setCurrentSong(audio.src);
-      }
-      console.log(currentSong);
+    socket.on("play", async () => {
       audio.play();
+    });
+
+    ss(socket).on("play-stream", (stream, { stat }) => {
+      console.log("Streaming playing");
+      console.log(socket);
     });
 
     socket.on("pause", () => {
       audio.pause();
     });
-  });
+  }, []);
 
   const playHandler = () => {
-    console.log("Clicked playing");
+    if (currentSong === "") {
+      setCurrentSong(song);
+      audio.src = song;
+    }
+    console.log("Started playing");
+    console.log(socket);
     socket.emit("play");
   };
 
